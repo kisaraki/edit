@@ -21,6 +21,9 @@ harness = false
 debug-latency = []
 
 [dependencies]
+# EN: Resolve standard user directories through one portable dependency on every supported OS.
+# 中文：在所有支援的作業系統上，透過單一可攜式相依套件解析使用者標準目錄。
+dirs = "6.0.0"
 lsh.workspace = true
 stdext.workspace = true
 
@@ -44,11 +47,9 @@ features = [
     "Win32_Security",
     "Win32_Storage_FileSystem",
     "Win32_System_Console",
-    "Win32_System_Com",
     "Win32_System_IO",
     "Win32_System_LibraryLoader",
     "Win32_System_Threading",
-    "Win32_UI_Shell",
 ]
 
 [dev-dependencies]

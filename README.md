@@ -17,13 +17,14 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
 
 客製功能：
 
-- 提供 `DEFAULT`、`MSPWB`、`CIA`、`MM14`、`XT/AT Style` 五種顯示主題。設定儲存於
-  `%APPDATA%\TZK\Edit\settings.json`，檔案固定使用 LF，避免 CRLF 造成設定解析問題。
+- 提供 `DEFAULT`、`MSPWB`、`CIA`、`MM14`、`XT/AT Style` 五種顯示主題。Windows 設定儲存於
+  `%APPDATA%\TZK\Edit\settings.json`；macOS 與 Linux 則使用平台標準設定目錄下的
+  `TZK/Edit/settings.json`。檔案固定使用 LF，避免 CRLF 造成設定解析問題。
 - 選單列使用白色背景，狀態列使用綠色背景。
 - 「開啟舊檔」對話框分為上下兩欄；上欄維持目錄及檔案選擇，下欄顯示最近五次成功開啟
   的檔案名稱與絕對路徑。最近檔案亦保存於設定檔中，最新項目優先且不重複。
-- 開啟檔案及未命名文件第一次存檔時，以 Windows Known Folder API 取得實際桌面路徑，
-  包含已移轉至 OneDrive 的桌面。
+- 開啟檔案及未命名文件第一次存檔時，由跨平台目錄抽象取得各作業系統的桌面路徑；
+  Windows 仍支援移轉至 OneDrive 的桌面。
 - Windows 部署後會列入 `.txt`、`.md`、`.log` 的「開啟方式」候選清單，但不會變更使用者
   原有的預設程式。
 - 「檢視 → 導覽視窗」只在 `.md` 文件啟用；其他格式保留選項但反灰停用。導覽視窗只解析
@@ -34,7 +35,8 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
   與下一原始行直接合併後繼續套用相同邊界規則直到檔尾；LF／CRLF 格式會予以保留。
 
 Rust release 建置必須使用 [build-local.ps1](./build-local.ps1)。腳本會驗證並使用本機
-PowerShell 7.6.4 (`pwsh.exe`)，建立獨立且可見的編譯視窗，執行格式檢查、workspace 測試、ICU 測試、release 編譯與部署暫存，
+PowerShell 7.6.4 (`pwsh.exe`)，建立獨立且可見的編譯視窗，執行格式檢查、workspace
+測試、ICU 測試、Linux／macOS 交叉檢查、release 編譯與部署暫存，
 並把正式執行檔保留在 `target\release\edit.exe`：
 
 ```powershell
@@ -61,15 +63,16 @@ authors are `KOSMOS, Tzushih.K`, with modification copyright
 
 Customized features:
 
-- Provides five display themes: `DEFAULT`, `MSPWB`, `CIA`, `MM14`, and `XT/AT Style`. Settings are
-  stored in `%APPDATA%\TZK\Edit\settings.json`, always with LF line endings to avoid CRLF parsing
-  problems.
+- Provides five display themes: `DEFAULT`, `MSPWB`, `CIA`, `MM14`, and `XT/AT Style`. Windows stores
+  settings in `%APPDATA%\TZK\Edit\settings.json`; macOS and Linux use `TZK/Edit/settings.json`
+  beneath the platform-standard configuration directory. Files always use LF endings.
 - Uses a white menu-bar background and a green status-bar background.
 - Splits the Open dialog into two panes. The upper pane keeps the normal directory/file picker;
   the bordered lower pane lists the five most recently opened files as one-click absolute-path
   buttons. The settings file keeps these paths newest-first and without duplicates.
-- Starts Open and the first Save As for an untitled document at the real Desktop location returned
-  by the Windows Known Folder API, including a Desktop redirected to OneDrive.
+- Starts Open and the first Save As for an untitled document at the Desktop returned by a portable
+  directory abstraction on Windows, macOS, and Linux, including a Windows Desktop redirected to
+  OneDrive.
 - Registers the application as an Open With candidate for `.txt`, `.md`, and `.log` without
   changing the user's existing default application.
 - Enables `View → Navigation Pane` only for `.md` documents and keeps it visibly disabled for other
@@ -81,8 +84,9 @@ Customized features:
   the same boundary through end-of-file while preserving LF or CRLF.
 
 Rust release builds must use [build-local.ps1](./build-local.ps1). It verifies and uses the local
-PowerShell 7.6.4 (`pwsh.exe`), always opens a separate visible compiler window, and runs formatting checks, workspace tests, ICU tests, the release
-build, and deployment staging, and retains the production binary at `target\release\edit.exe`:
+PowerShell 7.6.4 (`pwsh.exe`), always opens a separate visible compiler window, and runs formatting
+checks, workspace tests, ICU tests, Linux/macOS cross-checks, the release build, and deployment
+staging. It retains the production binary at `target\release\edit.exe`:
 
 ```powershell
 Set-Location D:\CodexWorkspace\msedit

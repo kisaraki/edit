@@ -16,7 +16,7 @@
 
 未來本地開發的標準入口為 repository 根目錄的 `build-local.ps1` 與 `deploy-local.ps1`。建置、測試與 staging 在一般權限下完成；只有寫入 `Program Files` 的部署腳本透過標準 UAC 提升權限。
 
-所有 Rust release 編譯都必須經由 `build-local.ps1` 使用 PowerShell 7.6.4 (`pwsh.exe`) 啟動獨立、可見的編譯視窗；不得以背景或隱藏視窗直接執行 `cargo build`。編譯視窗必須顯示 PowerShell 版本、Cargo 輸出、正式版本、SHA-256 與 `target\release\edit.exe` 路徑。
+所有 Rust release 編譯都必須經由 `build-local.ps1` 使用 PowerShell 7.6.4 (`pwsh.exe`) 啟動獨立、可見的編譯視窗；不得以背景或隱藏視窗直接執行 `cargo build`。編譯視窗必須顯示 PowerShell 版本、Cargo 輸出、Linux／macOS 交叉檢查、正式版本、SHA-256 與 `target\release\edit.exe` 路徑。GitHub CI 另須在 Windows、Ubuntu、macOS runner 上原生執行測試與 release build。
 
 ```powershell
 $RepoRoot = 'D:\CodexWorkspace\msedit'

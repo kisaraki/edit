@@ -325,29 +325,9 @@ fn settings_json_path() -> Option<PathBuf> {
 }
 
 fn config_dir() -> Option<PathBuf> {
-    fn var_path(key: &str) -> Option<PathBuf> {
-        std::env::var_os(key).map(PathBuf::from)
-    }
-
-    fn push(mut path: PathBuf, suffix: &str) -> PathBuf {
-        path.push(suffix);
-        path
-    }
-
-    #[cfg(target_os = "windows")]
-    {
-        var_path("APPDATA").map(|p| push(p, "TZK\\Edit"))
-    }
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
-    {
-        var_path("HOME").map(|p| push(p, "Library/Application Support/com.tzk.edit"))
-    }
-    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "ios")))]
-    {
-        var_path("XDG_CONFIG_HOME")
-            .or_else(|| var_path("HOME").map(|p| push(p, ".config")))
-            .map(|p| push(p, "msedit-tzk"))
-    }
+    // EN: `dirs` follows each OS convention while the app keeps one portable code path.
+    // 中文：`dirs` 依循各作業系統慣例，應用程式則維持單一可攜式程式路徑。
+    dirs::config_dir().map(|path| path.join("TZK").join("Edit"))
 }
 
 #[cfg(test)]
@@ -405,5 +385,10 @@ mod tests {
             settings.recent_files,
             ["four", "six", "five", "three", "two"].map(PathBuf::from)
         );
+    }
+
+    #[test]
+    fn config_path_uses_the_cross_platform_directory_provider() {
+        assert_eq!(config_dir(), dirs::config_dir().map(|path| path.join("TZK").join("Edit")));
     }
 }

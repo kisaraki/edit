@@ -335,14 +335,17 @@ pub fn draw_error_log(ctx: &mut Context, state: &mut State) {
     }
 }
 
-#[cfg(all(test, windows))]
+#[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn open_and_untitled_save_as_start_on_desktop() {
-        let desktop = sys::desktop_dir().unwrap();
-        assert!(desktop.is_dir());
+    fn open_and_untitled_save_as_use_the_resolved_desktop_when_available() {
+        // EN: Headless CI may not expose a Desktop, so only assert when the provider resolves one.
+        // 中文：無介面的 CI 可能沒有桌面目錄，因此僅在成功解析時進行斷言。
+        let Ok(desktop) = sys::desktop_dir() else {
+            return;
+        };
 
         let mut state = State::new().unwrap();
         show_file_picker(&mut state, StateFilePicker::Open);

@@ -35,6 +35,8 @@ if (-not $Child) {
 }
 
 $Cargo = Join-Path $env:USERPROFILE '.cargo\bin\cargo.exe'
+$Rustup = Join-Path $env:USERPROFILE '.cargo\bin\rustup.exe'
+$CrossCheckTargets = @('x86_64-unknown-linux-gnu', 'x86_64-apple-darwin')
 $ReleaseExe = Join-Path $RepoRoot 'target\release\edit.exe'
 $StageDir = Join-Path $RepoRoot 'target\deploy\msedit-tzk'
 $ResultPath = Join-Path $RepoRoot 'target\build\build-result.json'
@@ -97,6 +99,9 @@ try {
     if (-not (Test-Path -LiteralPath $Cargo -PathType Leaf)) {
         throw "Cargo executable not found: $Cargo"
     }
+    if (-not (Test-Path -LiteralPath $Rustup -PathType Leaf)) {
+        throw "rustup executable not found: $Rustup"
+    }
 
     if ($PSVersionTable.PSEdition -ne 'Core' -or $PSVersionTable.PSVersion -lt $RequiredPowerShellVersion) {
         throw "The compiler child must run in PowerShell $RequiredPowerShellVersion or later."
@@ -132,6 +137,20 @@ try {
         }
     }
 
+    # EN: Cross-check portable Rust code without linking against foreign OS SDKs on Windows.
+    # 中文：在 Windows 上檢查跨平台 Rust 程式碼，但不嘗試連結其他作業系統的 SDK。
+    foreach ($target in $CrossCheckTargets) {
+        & $Rustup target add $target
+        if ($LASTEXITCODE -ne 0) {
+            throw "Unable to install Rust standard library for $target."
+        }
+
+        & $Cargo check -p edit --target $target
+        if ($LASTEXITCODE -ne 0) {
+            throw "Cross-platform cargo check failed for $target."
+        }
+    }
+
     & $Cargo build -p edit --release
     if ($LASTEXITCODE -ne 0) {
         throw 'Release build failed.'
@@ -157,6 +176,7 @@ try {
     $result.versionDeclaration = $version.Lines
     $result.releaseExe = $ReleaseExe
     $result.stageDir = $StageDir
+    $result.crossCheckTargets = $CrossCheckTargets
     $result.sha256 = $sha256
 
     Write-Host ''

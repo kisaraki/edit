@@ -5,7 +5,6 @@
 use std::ffi::{OsString, c_char, c_void};
 use std::fs::{self, File};
 use std::mem::MaybeUninit;
-use std::os::windows::ffi::OsStringExt as _;
 use std::os::windows::io::{AsRawHandle as _, FromRawHandle};
 use std::path::{Path, PathBuf};
 use std::ptr::{self, NonNull, null, null_mut};
@@ -15,8 +14,7 @@ use stdext::arena::{Arena, scratch_arena};
 use stdext::arena_write_fmt;
 use stdext::collections::{BString, BVec};
 use windows_sys::Win32::Storage::FileSystem;
-use windows_sys::Win32::System::{Com, Console, IO, LibraryLoader, Threading};
-use windows_sys::Win32::UI::Shell;
+use windows_sys::Win32::System::{Console, IO, LibraryLoader, Threading};
 use windows_sys::Win32::{Foundation, Globalization};
 use windows_sys::core::*;
 
@@ -515,29 +513,6 @@ pub fn canonicalize(path: &Path) -> std::io::Result<PathBuf> {
     let path = unsafe { OsString::from_encoded_bytes_unchecked(path) };
     let path = PathBuf::from(path);
     Ok(path)
-}
-
-/// EN: Returns the current user's Desktop known folder, including redirected OneDrive desktops.
-/// 中文：傳回目前使用者的桌面 Known Folder，也支援重新導向至 OneDrive 的桌面。
-pub fn desktop_dir() -> io::Result<PathBuf> {
-    unsafe {
-        let mut path = null_mut();
-        let result =
-            Shell::SHGetKnownFolderPath(&Shell::FOLDERID_Desktop, 0, null_mut(), &mut path);
-        if result < 0 {
-            return Err(io::Error::from_raw_os_error(result));
-        }
-
-        let path = NonNull::new(path).ok_or_else(last_os_error)?;
-        let mut len = 0;
-        while *path.as_ptr().add(len) != 0 {
-            len += 1;
-        }
-        let value =
-            PathBuf::from(OsString::from_wide(std::slice::from_raw_parts(path.as_ptr(), len)));
-        Com::CoTaskMemFree(path.as_ptr().cast());
-        Ok(value)
-    }
 }
 
 unsafe fn get_module(name: *const u16) -> io::Result<NonNull<c_void>> {
