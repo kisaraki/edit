@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 #![allow(irrefutable_let_patterns)]
@@ -150,7 +150,7 @@ fn configure_windows_binary(target_os: TargetOs, original_version: &str, tzk_ver
         .set("FileDescription", "Microsoft Edit")
         .set("FileVersion", original_version)
         .set("ProductVersion", &format!("tzk {tzk_version}"))
-        .set("LegalCopyright", "© Microsoft Corporation. Modifications © 2026 KOSMOS, Tzhushh.K.")
+        .set("LegalCopyright", "© Microsoft Corporation. Modifications © 2026 KOSMOS, Tzushih.K.")
         .set_icon(icon_path)
         .compile()
         .unwrap();

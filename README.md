@@ -12,8 +12,8 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
 
 本 repository 是 `kisaraki/edit` 的 Windows 客製開發版本。原始版本為 `2.0.0`，tzk
 版本為 `0.0.8`；程式的版本資訊固定分成兩列顯示。Microsoft 原始版權及 MIT License
-均予以保留，客製修改作者為 `KOSMOS, Tzhushh.K`，修改版權為
-`Copyright (c) 2026 KOSMOS, Tzhushh.K.`。
+均予以保留，客製修改作者為 `KOSMOS, Tzushih.K`，修改版權為
+`Copyright (c) 2026 KOSMOS, Tzushih.K.`。
 
 客製功能：
 
@@ -56,8 +56,8 @@ Start-Process pwsh.exe -ArgumentList "-NoLogo -NoProfile -ExecutionPolicy Bypass
 This repository is the customized Windows build of `kisaraki/edit`. The upstream version is
 `2.0.0`, and the tzk version is `0.0.8`; version information is always shown on two separate
 lines. The original Microsoft copyright and MIT License are retained. The customized-build
-authors are `KOSMOS, Tzhushh.K`, with modification copyright
-`Copyright (c) 2026 KOSMOS, Tzhushh.K.`
+authors are `KOSMOS, Tzushih.K`, with modification copyright
+`Copyright (c) 2026 KOSMOS, Tzushih.K.`
 
 Customized features:
 

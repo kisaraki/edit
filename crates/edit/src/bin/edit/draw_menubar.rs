@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 use edit::helpers::*;
@@ -226,7 +226,7 @@ pub fn draw_dialog_about(ctx: &mut Context, state: &mut State) {
             ctx.attr_overflow(Overflow::TruncateTail);
             ctx.attr_position(Position::Center);
 
-            ctx.label("modifications-copyright", "Modifications (c) 2026 KOSMOS, Tzhushh.K");
+            ctx.label("modifications-copyright", "Modifications (c) 2026 KOSMOS, Tzushih.K");
             ctx.attr_overflow(Overflow::TruncateTail);
             ctx.attr_position(Position::Center);
 

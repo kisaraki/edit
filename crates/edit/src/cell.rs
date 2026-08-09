@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 //! [`std::cell::RefCell`], but without runtime checks in release builds.
