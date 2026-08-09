@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
 // Licensed under the MIT License.
 
 //! Unix-specific platform code.
@@ -10,7 +11,7 @@ use std::ffi::{c_char, c_int, c_void};
 use std::fs::File;
 use std::mem::{self, ManuallyDrop, MaybeUninit};
 use std::os::fd::{AsRawFd as _, FromRawFd as _};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::ptr::{NonNull, null_mut};
 use std::{io, thread, time};
 
@@ -19,6 +20,14 @@ use stdext::arena_format;
 use stdext::collections::{BString, BVec};
 
 use crate::helpers::*;
+
+/// EN: Returns the conventional Desktop directory for the current user.
+/// 中文：傳回目前使用者慣用的 Desktop 目錄。
+pub fn desktop_dir() -> io::Result<PathBuf> {
+    let home = std::env::var_os("HOME")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "HOME is not set"))?;
+    Ok(PathBuf::from(home).join("Desktop"))
+}
 
 struct State {
     stdin: libc::c_int,

@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
 // Licensed under the MIT License.
 
 use edit::framebuffer::{Attributes, IndexedColor};
@@ -7,6 +8,7 @@ use edit::helpers::*;
 use edit::icu;
 use edit::input::vk;
 use edit::lsh::LANGUAGES;
+use edit::oklab::StraightRgba;
 use edit::tui::*;
 use stdext::arena::scratch_arena;
 use stdext::arena_format;
@@ -16,10 +18,12 @@ use crate::localization::*;
 use crate::state::*;
 
 pub fn draw_statusbar(ctx: &mut Context, state: &mut State) {
+    // EN: The customized status row is always green with white text.
+    // 中文：客製狀態列固定為綠底白字。
     ctx.table_begin("statusbar");
     ctx.attr_focus_well();
-    ctx.attr_background_rgba(state.menubar_color_bg);
-    ctx.attr_foreground_rgba(state.menubar_color_fg);
+    ctx.attr_background_rgba(StraightRgba::from_rgba(0x008000ff));
+    ctx.attr_foreground_rgba(StraightRgba::from_rgba(0xffffffff));
     ctx.table_set_cell_gap(Size { width: 2, height: 0 });
     ctx.attr_intrinsic_size(Size { width: COORD_TYPE_SAFE_MAX, height: 1 });
     ctx.attr_padding(Rect::two(0, 1));

@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
 // Licensed under the MIT License.
 
 #![allow(irrefutable_let_patterns)]
@@ -20,6 +21,13 @@ enum TargetOs {
 fn main() {
     stdext::arena::init(128 * 1024 * 1024).unwrap();
 
+    // EN: Keep the Microsoft source version and the tzk modification version independent.
+    // 中文：Microsoft 原始版本與 tzk 修改版本分開管理，避免再組合成單一版本字串。
+    let original_version = env!("CARGO_PKG_VERSION");
+    let tzk_version = "0.0.8";
+    println!("cargo::rustc-env=EDIT_ORIGINAL_VERSION={original_version}");
+    println!("cargo::rustc-env=EDIT_TZK_VERSION={tzk_version}");
+
     let target_os = match env_opt("CARGO_CFG_TARGET_OS").as_str() {
         "windows" => TargetOs::Windows,
         "macos" | "ios" => TargetOs::MacOS,
@@ -30,7 +38,7 @@ fn main() {
     compile_i18n();
     configure_icu(target_os);
     #[cfg(windows)]
-    configure_windows_binary(target_os);
+    configure_windows_binary(target_os, original_version, tzk_version);
 }
 
 fn compile_lsh() {
@@ -129,7 +137,7 @@ fn configure_icu(target_os: TargetOs) {
 }
 
 #[cfg(windows)]
-fn configure_windows_binary(target_os: TargetOs) {
+fn configure_windows_binary(target_os: TargetOs, original_version: &str, tzk_version: &str) {
     if target_os != TargetOs::Windows {
         return;
     }
@@ -140,7 +148,9 @@ fn configure_windows_binary(target_os: TargetOs) {
     winresource::WindowsResource::new()
         .set_manifest_file(manifest_path)
         .set("FileDescription", "Microsoft Edit")
-        .set("LegalCopyright", "© Microsoft Corporation. All rights reserved.")
+        .set("FileVersion", original_version)
+        .set("ProductVersion", &format!("tzk {tzk_version}"))
+        .set("LegalCopyright", "© Microsoft Corporation. Modifications © 2026 KOSMOS, Tzhushh.K.")
         .set_icon(icon_path)
         .compile()
         .unwrap();

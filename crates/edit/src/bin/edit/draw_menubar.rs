@@ -1,19 +1,24 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
 // Licensed under the MIT License.
 
 use edit::helpers::*;
 use edit::input::{kbmod, vk};
+use edit::oklab::StraightRgba;
 use edit::tui::*;
 use stdext::arena_format;
 
+use crate::draw_navigation::document_is_markdown;
 use crate::localization::*;
-use crate::settings::Settings;
+use crate::settings::{Settings, Theme};
 use crate::state::*;
 
 pub fn draw_menubar(ctx: &mut Context, state: &mut State) {
+    // EN: The customized menu row is always white with black text, independent of the theme.
+    // 中文：客製選單列固定為白底黑字，不受畫面主題影響。
     ctx.menubar_begin();
-    ctx.attr_background_rgba(state.menubar_color_bg);
-    ctx.attr_foreground_rgba(state.menubar_color_fg);
+    ctx.attr_background_rgba(StraightRgba::from_rgba(0xffffffff));
+    ctx.attr_foreground_rgba(StraightRgba::from_rgba(0x000000ff));
     {
         let contains_focus = ctx.contains_focus();
 
@@ -43,14 +48,14 @@ fn draw_menu_file(ctx: &mut Context, state: &mut State) {
         draw_add_untitled_document(ctx, state);
     }
     if ctx.menubar_menu_button(loc(LocId::FileOpen), 'O', kbmod::CTRL | vk::O) {
-        state.wants_file_picker = StateFilePicker::Open;
+        show_file_picker(state, StateFilePicker::Open);
     }
     if state.documents.active().is_some() {
         if ctx.menubar_menu_button(loc(LocId::FileSave), 'S', kbmod::CTRL | vk::S) {
             state.wants_save = true;
         }
         if ctx.menubar_menu_button(loc(LocId::FileSaveAs), 'A', vk::NULL) {
-            state.wants_file_picker = StateFilePicker::SaveAs;
+            show_file_picker(state, StateFilePicker::SaveAs);
         }
     }
     #[allow(irrefutable_let_patterns)]
@@ -68,6 +73,11 @@ fn draw_menu_file(ctx: &mut Context, state: &mut State) {
             }
             Err(err) => error_log_add(ctx, state, err),
         }
+    }
+    if ctx.menubar_menu_button(loc(LocId::FileTheme), 'T', vk::NULL) {
+        // EN: Theme selection is independent from the editable JSON settings document.
+        // 中文：主題選擇為獨立介面，不依賴直接編輯 JSON 設定文件。
+        state.wants_theme_picker = true;
     }
     if state.documents.active().is_some()
         && ctx.menubar_menu_button(loc(LocId::FileClose), 'C', kbmod::CTRL | vk::W)
@@ -118,17 +128,40 @@ fn draw_menu_edit(ctx: &mut Context, state: &mut State) {
         tb.select_all();
         ctx.needs_rerender();
     }
+    drop(tb);
+    // EN: Boundary Alignment is the final Edit-menu command and starts at column 80.
+    // 中文：「邊界對齊」位於編輯選單末項，輸入欄預設為第 80 字元。
+    if ctx.menubar_menu_button(loc(LocId::EditBoundaryAlign), 'B', vk::NULL) {
+        state.wants_boundary_align = true;
+        state.boundary_align_column.clear();
+        state.boundary_align_column.push_str("80");
+        state.boundary_align_invalid = false;
+    }
     ctx.menubar_menu_end();
 }
 
 fn draw_menu_view(ctx: &mut Context, state: &mut State) {
     if let Some(doc) = state.documents.active() {
+        let markdown_path = doc.path.clone().filter(|_| document_is_markdown(doc));
         let mut tb = doc.buffer.borrow_mut();
         let word_wrap = tb.is_word_wrap_enabled();
 
         // All values on the statusbar are currently document specific.
         if ctx.menubar_menu_button(loc(LocId::ViewFocusStatusbar), 'S', vk::NULL) {
             state.wants_statusbar_focus = true;
+        }
+        // EN: Keep Navigation second in View, but disable it unless the active file is Markdown.
+        // 中文：「導覽視窗」固定為檢視選單第二項，非 Markdown 文件時僅反灰停用。
+        if let Some(markdown_path) = markdown_path {
+            if ctx.menubar_menu_button(loc(LocId::ViewNavigation), 'N', vk::NULL) {
+                if state.navigation_path.as_ref() != Some(&markdown_path) {
+                    state.navigation_collapsed.clear();
+                    state.navigation_path = Some(markdown_path);
+                }
+                state.wants_navigation = true;
+            }
+        } else {
+            ctx.menubar_menu_button_disabled(loc(LocId::ViewNavigation), 'N', vk::NULL);
         }
         if ctx.menubar_menu_button(loc(LocId::ViewGoToFile), 'F', kbmod::CTRL | vk::P) {
             state.wants_go_to_file = true;
@@ -163,19 +196,37 @@ pub fn draw_dialog_about(ctx: &mut Context, state: &mut State) {
             ctx.attr_overflow(Overflow::TruncateTail);
             ctx.attr_position(Position::Center);
 
+            // EN: Show the upstream and tzk releases on separate rows.
+            // 中文：原始版本與 tzk 修改版本各自使用一列顯示。
             ctx.label(
-                "version",
+                "original-version",
                 &arena_format!(
                     ctx.arena(),
                     "{}{}",
-                    loc(LocId::AboutDialogVersion),
-                    env!("CARGO_PKG_VERSION")
+                    loc(LocId::AboutDialogOriginalVersion),
+                    env!("EDIT_ORIGINAL_VERSION")
+                ),
+            );
+            ctx.attr_overflow(Overflow::TruncateHead);
+            ctx.attr_position(Position::Center);
+
+            ctx.label(
+                "tzk-version",
+                &arena_format!(
+                    ctx.arena(),
+                    "{}{}",
+                    loc(LocId::AboutDialogTzkVersion),
+                    env!("EDIT_TZK_VERSION")
                 ),
             );
             ctx.attr_overflow(Overflow::TruncateHead);
             ctx.attr_position(Position::Center);
 
             ctx.label("copyright", "Copyright (c) Microsoft Corporation");
+            ctx.attr_overflow(Overflow::TruncateTail);
+            ctx.attr_position(Position::Center);
+
+            ctx.label("modifications-copyright", "Modifications (c) 2026 KOSMOS, Tzhushh.K");
             ctx.attr_overflow(Overflow::TruncateTail);
             ctx.attr_position(Position::Center);
 
@@ -195,5 +246,42 @@ pub fn draw_dialog_about(ctx: &mut Context, state: &mut State) {
     }
     if ctx.modal_end() {
         state.wants_about = false;
+    }
+}
+
+pub fn draw_dialog_theme(ctx: &mut Context, state: &mut State) {
+    // EN: Present the five persistent display themes as one independent modal choice.
+    // 中文：以獨立對話框提供五種可保存的畫面主題選擇。
+    let mut selected = None;
+
+    ctx.modal_begin("theme", loc(LocId::ThemeDialogTitle));
+    {
+        ctx.list_begin("themes");
+        ctx.inherit_focus();
+        ctx.focus_on_first_present();
+        ctx.attr_padding(Rect::three(1, 2, 1));
+        {
+            for theme in Theme::ALL {
+                if ctx.list_item(theme == state.theme, theme.display_name())
+                    == ListSelection::Activated
+                {
+                    selected = Some(theme);
+                }
+            }
+        }
+        ctx.list_end();
+    }
+    let close = ctx.modal_end();
+
+    if let Some(theme) = selected {
+        state.theme = theme;
+        state.wants_theme_picker = false;
+        if let Err(err) = Settings::set_theme(theme) {
+            error_log_add(ctx, state, err);
+        }
+        ctx.needs_rerender();
+    } else if close {
+        state.wants_theme_picker = false;
+        ctx.needs_rerender();
     }
 }

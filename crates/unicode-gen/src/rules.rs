@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzhushh.K.
 // Licensed under the MIT License.
 
 // Used as an indicator in our rules for ÷ ("does not join").
