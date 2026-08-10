@@ -2122,17 +2122,18 @@ impl<'a> Context<'a, '_> {
         self.button_activated()
     }
 
-    /// Creates a checkbox with the given text.
-    /// Returns true if the checkbox was activated.
+    /// EN: Creates a checkbox with ASCII markers whose width is stable across terminal platforms.
+    /// 中文：使用跨終端機平台寬度一致的 ASCII 標記建立核取方塊。
+    /// EN: Returns true if the checkbox was activated.
+    /// 中文：核取方塊啟用時回傳 true。
     pub fn checkbox(&mut self, classname: &'static str, text: &str, checked: &mut bool) -> bool {
         self.styled_label_begin(classname);
         self.attr_focusable();
         if self.is_focused() {
             self.attr_reverse();
         }
-        self.styled_label_add_text(if *checked { "[◼ " } else { "[◻ " });
+        self.styled_label_add_text(if *checked { "[x] " } else { "[ ] " });
         self.styled_label_add_text(text);
-        self.styled_label_add_text("]");
         self.styled_label_end();
 
         let activated = self.button_activated();

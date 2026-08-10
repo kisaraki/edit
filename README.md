@@ -10,7 +10,7 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
 
 ### 中文
 
-本 repository 是 `kisaraki/edit` 的 Windows 客製開發版本。原始版本為 `2.0.0`，tzk
+本 repository 是 `kisaraki/edit` 的 Windows／WSL 跨平台客製開發版本。原始版本為 `2.0.0`，tzk
 版本為 `0.0.8`；程式的版本資訊固定分成兩列顯示。Microsoft 原始版權及 MIT License
 均予以保留，客製修改作者為 `KOSMOS, Tzushih.K`，修改版權為
 `Copyright (c) 2026 KOSMOS, Tzushih.K.`。
@@ -21,8 +21,10 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
   `%APPDATA%\TZK\Edit\settings.json`；macOS 與 Linux 則使用平台標準設定目錄下的
   `TZK/Edit/settings.json`。檔案固定使用 LF，避免 CRLF 造成設定解析問題。
 - 選單列使用白色背景，狀態列使用綠色背景。
-- 「搜尋」與「取代」改用中央對話框，不再占用編輯區上方列；保留搜尋選項、F3、Enter、
-  Ctrl+Alt+Enter、Esc，以及搜尋、取代、全部取代與關閉按鈕。
+- 「搜尋」與「取代」改用中央對話框，不再占用編輯區上方列；三個搜尋選項分列顯示，避免
+  長翻譯越過邊框。核取方塊採用跨平台固定欄寬的 `[ ]`／`[x]` 標記，確保 Windows、macOS
+  與 Linux 終端機均能完整顯示外框；並保留 F3、Enter、Ctrl+Alt+Enter、Esc，以及搜尋、取代、
+  全部取代與關閉按鈕。
 - 「開啟舊檔」對話框分為上下兩欄；上欄維持目錄及檔案選擇，下欄顯示最近五次成功開啟
   的檔案名稱與絕對路徑。最近檔案亦保存於設定檔中，最新項目優先且不重複。
 - 開啟檔案及未命名文件第一次存檔時，由跨平台目錄抽象取得各作業系統的桌面路徑；
@@ -36,28 +38,31 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
 - 「編輯 → 邊界對齊」接受正整數 `n`，預設為 `80`。超過第 `n` 個字元的內容會移到新行，
   與下一原始行直接合併後繼續套用相同邊界規則直到檔尾；LF／CRLF 格式會予以保留。
 
-Rust release 建置必須使用 [build-local.ps1](./build-local.ps1)。腳本會驗證並使用本機
-PowerShell 7.6.4 (`pwsh.exe`)，建立獨立且可見的編譯視窗，執行格式檢查、workspace
-測試、ICU 測試、Linux／macOS 交叉檢查、release 編譯與部署暫存，
-並把正式執行檔保留在 `target\release\edit.exe`：
+未來的標準建置部署入口為 [build-deploy-all.ps1](./build-deploy-all.ps1)。它會開啟可見的
+PowerShell 7.6.4 終端機，依序處理 Windows 原生建置、WSL／Ubuntu 原生建置、Windows UAC
+部署及 WSL sudo 部署。UAC 或 sudo 出現前會先顯示中英提醒，兩個平台的 Cargo、測試、版本
+及部署過程都不會在背景隱藏：
 
 ```powershell
 Set-Location D:\CodexWorkspace\msedit
-& .\build-local.ps1
+& .\build-deploy-all.ps1
 ```
 
-建置成功後，再使用 UAC 視窗部署至 `C:\Program Files\msedit-tzk`：
+Windows 正式執行檔保留於 `target\release\edit.exe` 並部署至
+`C:\Program Files\msedit-tzk`；WSL 正式執行檔保留於
+`/mnt/wsl-mount/msedit-tzk-target/release/edit`，並部署至
+`/mnt/wsl-mount/msedit-tzk-deploy`。若只需單一平台，可分別執行：
 
-```powershell
-$script = (Resolve-Path .\deploy-local.ps1).Path
-Start-Process pwsh.exe -ArgumentList "-NoLogo -NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs -Wait
+```text
+Windows：build-local.ps1、deploy-local.ps1
+WSL：    build-wsl.sh、deploy-wsl.sh
 ```
 
 完整的本機開發、檔案關聯及部署驗證規則請參閱 [setuplocal.md](./setuplocal.md)。
 
 ### English
 
-This repository is the customized Windows build of `kisaraki/edit`. The upstream version is
+This repository is the customized Windows/WSL cross-platform build of `kisaraki/edit`. The upstream version is
 `2.0.0`, and the tzk version is `0.0.8`; version information is always shown on two separate
 lines. The original Microsoft copyright and MIT License are retained. The customized-build
 authors are `KOSMOS, Tzushih.K`, with modification copyright
@@ -69,9 +74,11 @@ Customized features:
   settings in `%APPDATA%\TZK\Edit\settings.json`; macOS and Linux use `TZK/Edit/settings.json`
   beneath the platform-standard configuration directory. Files always use LF endings.
 - Uses a white menu-bar background and a green status-bar background.
-- Presents Find and Replace in centered dialogs instead of rows above the editor while retaining
-  search options, F3, Enter, Ctrl+Alt+Enter, Escape, and explicit Find, Replace, Replace All,
-  and Close buttons.
+- Presents Find and Replace in centered dialogs instead of rows above the editor. The three search
+  options use separate rows so long translations cannot cross the border. Their checkboxes use the
+  fixed-width, cross-platform `[ ]`/`[x]` markers so Windows, macOS, and Linux terminals preserve the
+  complete dialog frame. F3, Enter, Ctrl+Alt+Enter, Escape, and explicit Find, Replace, Replace All,
+  and Close buttons remain available.
 - Splits the Open dialog into two panes. The upper pane keeps the normal directory/file picker;
   the bordered lower pane lists the five most recently opened files as one-click absolute-path
   buttons. The settings file keeps these paths newest-first and without duplicates.
@@ -88,21 +95,24 @@ Customized features:
   column `n` moves to a new line, joins the following original line, and is repeatedly normalized to
   the same boundary through end-of-file while preserving LF or CRLF.
 
-Rust release builds must use [build-local.ps1](./build-local.ps1). It verifies and uses the local
-PowerShell 7.6.4 (`pwsh.exe`), always opens a separate visible compiler window, and runs formatting
-checks, workspace tests, ICU tests, Linux/macOS cross-checks, the release build, and deployment
-staging. It retains the production binary at `target\release\edit.exe`:
+The standard build-and-deploy entry point is [build-deploy-all.ps1](./build-deploy-all.ps1). It opens
+a visible PowerShell 7.6.4 terminal and sequentially runs the native Windows build, native WSL/Ubuntu
+build, Windows UAC deployment, and WSL sudo deployment. Bilingual notices appear before UAC or sudo,
+and Cargo, tests, versions, and deployment output from both platforms remain visible:
 
 ```powershell
 Set-Location D:\CodexWorkspace\msedit
-& .\build-local.ps1
+& .\build-deploy-all.ps1
 ```
 
-After a successful build, deploy to `C:\Program Files\msedit-tzk` through a UAC window:
+The Windows production executable remains at `target\release\edit.exe` and is deployed to
+`C:\Program Files\msedit-tzk`. The WSL executable remains at
+`/mnt/wsl-mount/msedit-tzk-target/release/edit` and is deployed under
+`/mnt/wsl-mount/msedit-tzk-deploy`. For a single platform, use the corresponding scripts:
 
-```powershell
-$script = (Resolve-Path .\deploy-local.ps1).Path
-Start-Process pwsh.exe -ArgumentList "-NoLogo -NoProfile -ExecutionPolicy Bypass -File `"$script`"" -Verb RunAs -Wait
+```text
+Windows: build-local.ps1 and deploy-local.ps1
+WSL:     build-wsl.sh and deploy-wsl.sh
 ```
 
 See [setuplocal.md](./setuplocal.md) for the complete local-development, file-association, deployment,

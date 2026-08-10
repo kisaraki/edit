@@ -121,20 +121,27 @@ pub fn draw_dialog_search(ctx: &mut Context, state: &mut State) {
 
             ctx.table_begin("search-options");
             ctx.attr_padding(Rect::three(1, 0, 0));
-            ctx.table_set_cell_gap(Size { width: 2, height: 0 });
+            ctx.table_set_columns(&[48]);
             {
-                ctx.table_next_row();
                 let mut change = false;
+
+                // EN: Give every option its own table row so wide translations cannot disturb the modal border.
+                // 中文：每個選項各自使用一列表格，避免寬字元翻譯破壞對話框外框。
+                ctx.table_next_row();
                 change |= ctx.checkbox(
                     "match-case",
                     loc(LocId::SearchMatchCase),
                     &mut state.search_options.match_case,
                 );
+
+                ctx.table_next_row();
                 change |= ctx.checkbox(
                     "whole-word",
                     loc(LocId::SearchWholeWord),
                     &mut state.search_options.whole_word,
                 );
+
+                ctx.table_next_row();
                 change |= ctx.checkbox(
                     "use-regex",
                     loc(LocId::SearchUseRegex),
