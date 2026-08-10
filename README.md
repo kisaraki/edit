@@ -103,6 +103,26 @@ Start-Process pwsh.exe -ArgumentList "-NoLogo -NoProfile -ExecutionPolicy Bypass
 See [setuplocal.md](./setuplocal.md) for the complete local-development, file-association, deployment,
 and verification rules.
 
+## 授權與上游貢獻 / License and Upstream Contributions
+
+`kisaraki/edit` 及本客製版本以 [MIT License](./LICENSE) 發布。Microsoft 原始程式碼的版權
+聲明繼續保留；`KOSMOS, Tzushih.K` 對其客製修改保留修改版權，並以相同 MIT License
+授權。若內容含有第三方材料，仍須保留該材料原有的版權與授權聲明。
+
+由 `kisaraki/edit` 提交至 `microsoft/edit` 的本客製修改，是作者本人獨立創作，不代表任何
+組織或公司，也不是在受僱工作中完成。作者同意依 Microsoft Contributor License Agreement
+及上游專案適用的 MIT License 辦理貢獻授權。
+
+`kisaraki/edit` and this customized build are distributed under the [MIT License](./LICENSE).
+Microsoft's original copyright notice remains intact. `KOSMOS, Tzushih.K` retains modification
+copyright in the customized changes and licenses those changes under the same MIT License. Any
+third-party material must retain its existing copyright and license notices.
+
+The customized changes submitted from `kisaraki/edit` to `microsoft/edit` are the author's
+independent personal work, do not represent an organization or company, and were not created in
+the course of employment. The author agrees to license contributions under the Microsoft
+Contributor License Agreement and the upstream project's applicable MIT License.
+
 ## Installation
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/microsoft-edit.svg?exclude_unsupported=1)](https://repology.org/project/microsoft-edit/versions)
