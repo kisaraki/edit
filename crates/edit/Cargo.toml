@@ -1,5 +1,7 @@
 [package]
 name = "edit"
+# EN: Cargo keeps Microsoft's SemVer source version; build/main.rs separately declares tzk 0.0.8.
+# 中文：Cargo 保留 Microsoft 原始 SemVer；tzk 0.0.8 由 build/main.rs 獨立宣告。
 version = "2.0.0"
 
 edition.workspace = true
@@ -19,6 +21,9 @@ harness = false
 debug-latency = []
 
 [dependencies]
+# EN: Resolve standard user directories through one portable dependency on every supported OS.
+# 中文：在所有支援的作業系統上，透過單一可攜式相依套件解析使用者標準目錄。
+dirs = "6.0.0"
 lsh.workspace = true
 stdext.workspace = true
 

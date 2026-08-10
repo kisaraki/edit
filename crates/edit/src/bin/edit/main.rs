@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 mod apperr;
 mod documents;
+mod draw_boundary;
 mod draw_editor;
 mod draw_filepicker;
 mod draw_menubar;
+mod draw_navigation;
 mod draw_statusbar;
 mod localization;
 mod settings;
@@ -16,9 +19,11 @@ use std::path::Path;
 use std::time::Duration;
 use std::{env, process};
 
+use draw_boundary::*;
 use draw_editor::*;
 use draw_filepicker::*;
 use draw_menubar::*;
+use draw_navigation::*;
 use draw_statusbar::*;
 use edit::framebuffer::{self, IndexedColor};
 use edit::helpers::*;
@@ -76,6 +81,7 @@ fn run() -> apperr::Result<()> {
     if let Err(err) = Settings::reload() {
         state.add_error(err);
     }
+    state.theme = Settings::borrow().theme;
 
     if handle_args(&mut state)? {
         return Ok(());
@@ -95,25 +101,11 @@ fn run() -> apperr::Result<()> {
 
     let _restore = setup_terminal(&mut tui, &mut state, &mut vt_parser);
 
-    state.menubar_color_bg = tui.indexed(IndexedColor::Background).oklab_blend(tui.indexed_alpha(
-        IndexedColor::BrightBlue,
-        1,
-        2,
-    ));
-    state.menubar_color_fg = tui.contrasted(state.menubar_color_bg);
-    let floater_bg = tui
-        .indexed_alpha(IndexedColor::Background, 2, 3)
-        .oklab_blend(tui.indexed_alpha(IndexedColor::Foreground, 1, 3));
-    let floater_fg = tui.contrasted(floater_bg);
     tui.setup_modifier_translations(ModifierTranslations {
         ctrl: loc(LocId::Ctrl),
         alt: loc(LocId::Alt),
         shift: loc(LocId::Shift),
     });
-    tui.set_floater_default_bg(floater_bg);
-    tui.set_floater_default_fg(floater_fg);
-    tui.set_modal_default_bg(floater_bg);
-    tui.set_modal_default_fg(floater_fg);
 
     sys::inject_window_size_into_stdin();
 
@@ -293,6 +285,11 @@ fn handle_args(state: &mut State) -> apperr::Result<bool> {
         if let Some(goto) = goto {
             doc.cursor_move_to_goto(*goto);
         }
+        // EN: Files opened from Explorer/CMD/PowerShell also participate in the recent list.
+        // 中文：由檔案總管、CMD 或 PowerShell 開啟的檔案也會加入最近檔案清單。
+        if let Err(err) = Settings::record_recent_file(p) {
+            state.add_error(err);
+        }
     }
 
     if dir.is_none()
@@ -301,7 +298,8 @@ fn handle_args(state: &mut State) -> apperr::Result<bool> {
         dir = Some(parent.to_path_buf());
     }
 
-    state.file_picker_pending_dir = DisplayablePathBuf::from_path(dir.unwrap_or(cwd));
+    let default_dir = sys::desktop_dir().unwrap_or(cwd);
+    state.file_picker_pending_dir = DisplayablePathBuf::from_path(dir.unwrap_or(default_dir));
     Ok(false)
 }
 
@@ -333,10 +331,20 @@ fn print_help() {
 }
 
 fn print_version() {
-    sys::write_stdout(concat!("edit version ", env!("CARGO_PKG_VERSION"), "\n"));
+    // EN: Version output intentionally uses two lines for source and modification releases.
+    // 中文：版本輸出固定分成兩列，分別顯示原始版本與修改版本。
+    sys::write_stdout(concat!(
+        "edit original version: ",
+        env!("EDIT_ORIGINAL_VERSION"),
+        "\n",
+        "tzk version: ",
+        env!("EDIT_TZK_VERSION"),
+        "\n"
+    ));
 }
 
 fn draw(ctx: &mut Context, state: &mut State) {
+    configure_theme(ctx, state);
     draw_menubar(ctx, state);
     draw_editor(ctx, state);
     draw_statusbar(ctx, state);
@@ -365,6 +373,15 @@ fn draw(ctx: &mut Context, state: &mut State) {
     if state.wants_go_to_file {
         draw_go_to_file(ctx, state);
     }
+    if state.wants_theme_picker {
+        draw_dialog_theme(ctx, state);
+    }
+    if state.wants_boundary_align {
+        draw_dialog_boundary_align(ctx, state);
+    }
+    if state.wants_navigation {
+        draw_dialog_navigation(ctx, state);
+    }
     if state.wants_about {
         draw_dialog_about(ctx, state);
     }
@@ -381,11 +398,11 @@ fn draw(ctx: &mut Context, state: &mut State) {
         if key == kbmod::CTRL | vk::N {
             draw_add_untitled_document(ctx, state);
         } else if key == kbmod::CTRL | vk::O {
-            state.wants_file_picker = StateFilePicker::Open;
+            show_file_picker(state, StateFilePicker::Open);
         } else if key == kbmod::CTRL | vk::S {
             state.wants_save = true;
         } else if key == kbmod::CTRL_SHIFT | vk::S {
-            state.wants_file_picker = StateFilePicker::SaveAs;
+            show_file_picker(state, StateFilePicker::SaveAs);
         } else if key == kbmod::CTRL | vk::W {
             state.wants_close = true;
         } else if key == kbmod::CTRL | vk::P {
@@ -411,6 +428,27 @@ fn draw(ctx: &mut Context, state: &mut State) {
         // All of the above shortcuts happen to require a rerender.
         ctx.needs_rerender();
         ctx.set_input_consumed();
+    }
+}
+
+fn configure_theme(ctx: &mut Context, state: &mut State) {
+    // EN: Apply custom editor/modal/selection colors while DEFAULT adapts to the terminal palette.
+    // 中文：套用客製編輯器、對話框及反白色彩；DEFAULT 則維持隨終端配色調整。
+    if let Some(colors) = state.theme.colors() {
+        ctx.attr_background_rgba(colors.background);
+        ctx.attr_foreground_rgba(colors.foreground);
+
+        ctx.set_floater_default_colors(colors.background, colors.foreground);
+        ctx.set_modal_default_colors(colors.background, colors.foreground);
+        ctx.set_selection_colors(Some((colors.selection_background, colors.selection_foreground)));
+    } else {
+        let floater_bg = ctx
+            .indexed_alpha(IndexedColor::Background, 2, 3)
+            .oklab_blend(ctx.indexed_alpha(IndexedColor::Foreground, 1, 3));
+        let floater_fg = ctx.contrasted(floater_bg);
+        ctx.set_floater_default_colors(floater_bg, floater_fg);
+        ctx.set_modal_default_colors(floater_bg, floater_fg);
+        ctx.set_selection_colors(None);
     }
 }
 

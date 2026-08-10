@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 use edit::framebuffer::IndexedColor;
@@ -192,17 +193,22 @@ pub fn search_execute(ctx: &mut Context, state: &mut State, action: SearchAction
 }
 
 pub fn draw_handle_save(ctx: &mut Context, state: &mut State) {
+    let mut show_save_as = false;
     if let Some(doc) = state.documents.active_mut() {
         if doc.path.is_some() {
             if let Err(err) = doc.save(None) {
                 error_log_add(ctx, state, err);
             }
         } else {
-            // No path? Show the file picker.
-            state.wants_file_picker = StateFilePicker::SaveAs;
-            state.wants_save = false;
-            ctx.needs_rerender();
+            show_save_as = true;
         }
+    }
+
+    if show_save_as {
+        // EN: An untitled document opens Save As through the shared Desktop-default helper.
+        // 中文：未命名文件透過共用輔助函式開啟「另存新檔」，預設位置為桌面。
+        show_file_picker(state, StateFilePicker::SaveAs);
+        ctx.needs_rerender();
     }
 
     state.wants_save = false;

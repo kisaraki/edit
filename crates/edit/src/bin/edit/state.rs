@@ -1,20 +1,22 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 use std::borrow::Cow;
+use std::collections::BTreeSet;
 use std::ffi::{OsStr, OsString};
 use std::mem;
 use std::path::{Path, PathBuf};
 
 use edit::framebuffer::IndexedColor;
 use edit::helpers::*;
-use edit::oklab::StraightRgba;
 use edit::tui::*;
-use edit::{buffer, icu};
+use edit::{buffer, icu, sys};
 
 use crate::apperr;
 use crate::documents::DocumentManager;
 use crate::localization::*;
+use crate::settings::Theme;
 
 #[repr(transparent)]
 pub struct FormatApperr(apperr::Error);
@@ -131,8 +133,7 @@ pub struct OscTitleFileStatus {
 }
 
 pub struct State {
-    pub menubar_color_bg: StraightRgba,
-    pub menubar_color_fg: StraightRgba,
+    pub theme: Theme,
 
     pub documents: DocumentManager,
 
@@ -166,6 +167,13 @@ pub struct State {
     pub wants_statusbar_focus: bool,
     pub wants_indentation_picker: bool,
     pub wants_go_to_file: bool,
+    pub wants_theme_picker: bool,
+    pub wants_boundary_align: bool,
+    pub boundary_align_column: String,
+    pub boundary_align_invalid: bool,
+    pub wants_navigation: bool,
+    pub navigation_collapsed: BTreeSet<usize>,
+    pub navigation_path: Option<PathBuf>,
     pub wants_about: bool,
     pub wants_close: bool,
     pub wants_exit: bool,
@@ -182,8 +190,7 @@ pub struct State {
 impl State {
     pub fn new() -> apperr::Result<Self> {
         Ok(Self {
-            menubar_color_bg: StraightRgba::zero(),
-            menubar_color_fg: StraightRgba::zero(),
+            theme: Theme::Default,
 
             documents: Default::default(),
 
@@ -216,6 +223,13 @@ impl State {
             wants_encoding_change: StateEncodingChange::None,
             wants_indentation_picker: false,
             wants_go_to_file: false,
+            wants_theme_picker: false,
+            wants_boundary_align: false,
+            boundary_align_column: "80".into(),
+            boundary_align_invalid: false,
+            wants_navigation: false,
+            navigation_collapsed: Default::default(),
+            navigation_path: None,
             wants_about: false,
             wants_close: false,
             wants_exit: false,
@@ -247,6 +261,38 @@ pub fn draw_add_untitled_document(ctx: &mut Context, state: &mut State) {
     if let Err(err) = state.documents.add_untitled() {
         error_log_add(ctx, state, err);
     }
+}
+
+pub fn show_file_picker(state: &mut State, picker: StateFilePicker) {
+    // EN: Open and an untitled Save As begin at the actual Windows Desktop known folder.
+    // 中文：「開啟舊檔」及未命名文件首次另存皆從 Windows 實際桌面 Known Folder 開始。
+    debug_assert!(matches!(picker, StateFilePicker::Open | StateFilePicker::SaveAs));
+
+    let target_dir = if picker == StateFilePicker::Open {
+        sys::desktop_dir().ok()
+    } else {
+        state
+            .documents
+            .active()
+            .and_then(|doc| doc.path.as_deref())
+            .and_then(Path::parent)
+            .map(Path::to_path_buf)
+            .or_else(|| sys::desktop_dir().ok())
+    };
+
+    if let Some(target_dir) = target_dir
+        && target_dir != state.file_picker_pending_dir.as_path()
+    {
+        state.file_picker_pending_dir = DisplayablePathBuf::from_path(target_dir);
+        state.file_picker_pending_dir_revision =
+            state.file_picker_pending_dir_revision.wrapping_add(1);
+    }
+
+    state.wants_file_picker = picker;
+    state.file_picker_pending_name = Default::default();
+    state.file_picker_entries = None;
+    state.file_picker_overwrite_warning = None;
+    state.file_picker_autocomplete.clear();
 }
 
 pub fn error_log_add(ctx: &mut Context, state: &mut State, err: apperr::Error) {
@@ -286,5 +332,28 @@ pub fn draw_error_log(ctx: &mut Context, state: &mut State) {
     }
     if ctx.modal_end() {
         state.error_log_count = 0;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn open_and_untitled_save_as_use_the_resolved_desktop_when_available() {
+        // EN: Headless CI may not expose a Desktop, so only assert when the provider resolves one.
+        // 中文：無介面的 CI 可能沒有桌面目錄，因此僅在成功解析時進行斷言。
+        let Ok(desktop) = sys::desktop_dir() else {
+            return;
+        };
+
+        let mut state = State::new().unwrap();
+        show_file_picker(&mut state, StateFilePicker::Open);
+        assert_eq!(state.file_picker_pending_dir.as_path(), desktop);
+
+        state.documents.add_untitled().unwrap();
+        state.file_picker_pending_dir = DisplayablePathBuf::from_path(PathBuf::from("Z:\\"));
+        show_file_picker(&mut state, StateFilePicker::SaveAs);
+        assert_eq!(state.file_picker_pending_dir.as_path(), desktop);
     }
 }

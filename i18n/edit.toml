@@ -340,6 +340,16 @@ vi = "Mở tệp…"
 zh-hans = "打开文件…"
 zh-hant = "開啟舊檔…"
 
+[FileOpenRecentFiles]
+en = "Recent files (last 5; click to open)"
+zh-hans = "最近打开的文件（最多5笔，单击打开）"
+zh-hant = "最近開啟的檔案（最多5筆，單擊開啟）"
+
+[FileOpenRecentEmpty]
+en = "No recently opened files"
+zh-hans = "没有最近打开的文件"
+zh-hant = "沒有最近開啟的檔案"
+
 [FileSave]
 en = "Save"
 ar = "حفظ"
@@ -426,6 +436,11 @@ sr-latn = "Podešavanja"
 tr = "Tercihler"
 zh-hans = "设置"
 zh-hant = "設定"
+
+[FileTheme]
+en = "Theme…"
+zh-hans = "主题…"
+zh-hant = "主題…"
 
 [FileClose]
 en = "Close File"
@@ -838,6 +853,28 @@ vi = "Chọn tất cả"
 zh-hans = "全选"
 zh-hant = "全選"
 
+# EN: msedit-tzk hard boundary alignment.
+# 中文：msedit-tzk 邊界對齊功能。
+[EditBoundaryAlign]
+en = "Boundary Alignment…"
+zh-hans = "边界对齐…"
+zh-hant = "邊界對齊…"
+
+[BoundaryAlignDialogTitle]
+en = "Boundary Alignment"
+zh-hans = "边界对齐"
+zh-hant = "邊界對齊"
+
+[BoundaryAlignDescription]
+en = "Right boundary column (positive integer):"
+zh-hans = "右边界字元位置（正整数）："
+zh-hant = "右邊界字元位置（正整數）："
+
+[BoundaryAlignInvalid]
+en = "Enter a positive integer."
+zh-hans = "请输入正整数。"
+zh-hant = "請輸入正整數。"
+
 # A menu bar item
 [View]
 en = "View"
@@ -873,6 +910,28 @@ uk = "Вигляд"
 vi = "Xem"
 zh-hans = "视图"
 zh-hant = "檢視"
+
+# EN: msedit-tzk Markdown navigation pane.
+# 中文：msedit-tzk Markdown 導覽視窗。
+[ViewNavigation]
+en = "Navigation Pane…"
+zh-hans = "导航窗口…"
+zh-hant = "導覽視窗…"
+
+[NavigationDialogTitle]
+en = "[Navigation Pane]"
+zh-hans = "[导航窗口]"
+zh-hant = "[導覽視窗]"
+
+[NavigationNoContent]
+en = "No headings or text"
+zh-hans = "没有标题或文字"
+zh-hant = "沒有標題或文字"
+
+[NavigationEscapeHint]
+en = "ESC Cancel"
+zh-hans = "ESC取消"
+zh-hant = "ESC取消"
 
 [ViewFocusStatusbar]
 en = "Focus Statusbar"
@@ -1077,7 +1136,7 @@ tr = "Kaydedilmemiş Değişiklikler"
 uk = "Незбережені зміни"
 vi = "Các thay đổi chưa được lưu"
 zh-hans = "未保存的更改"
-zh-hant = "有未儲存的變更"
+zh-hant = "有尚未儲存的變更"
 
 [UnsavedChangesDialogDescription]
 en = "Do you want to save the changes you made?"
@@ -1181,7 +1240,7 @@ tr = "Kaydetme"
 uk = "Не зберігати"
 vi = "Không lưu"
 zh-hans = "不保存"
-zh-hant = "不儲存"
+zh-hant = "放棄儲存"
 
 [AboutDialogTitle]
 en = "About"
@@ -1218,8 +1277,13 @@ vi = "Giới thiệu"
 zh-hans = "关于"
 zh-hant = "關於"
 
-[AboutDialogVersion]
-en = "Version: "
+[ThemeDialogTitle]
+en = "Select Theme"
+zh-hans = "选择主题"
+zh-hant = "選擇主題"
+
+[AboutDialogOriginalVersion]
+en = "Original version: "
 ar = "الإصدار: "
 bn = "সংস্করণ: "
 cs = "Verze: "
@@ -1250,8 +1314,13 @@ tk = "Wersiýa: "
 tr = "Sürüm: "
 uk = "Версія: "
 vi = "Phiên bản: "
-zh-hans = "版本: "
-zh-hant = "版本: "
+zh-hans = "原始版本: "
+zh-hant = "原始版本: "
+
+[AboutDialogTzkVersion]
+en = "tzk version: "
+zh-hans = "tzk 版本: "
+zh-hant = "tzk 版本: "
 
 # Shown when the clipboard size exceeds the limit for OSC 52
 [LargeClipboardWarningLine1]
@@ -1395,7 +1464,7 @@ tr = "Kopyaladığınız metin paylaşmak için çok büyük."
 uk = "Скопійований текст завеликий для передачі."
 vi = "Văn bản bạn sao chép quá lớn, không thể chia sẻ."
 zh-hans = "你复制的文本过大，无法共享。"
-zh-hant = "您複製的文字太大，無法分享。"
+zh-hant = "您複製的文字太多，無法分享。"
 
 [WarningDialogTitle]
 en = "Warning"
@@ -1644,7 +1713,7 @@ tr = "Tam sözcük"
 uk = "Ціле слово"
 vi = "Khớp toàn bộ từ"
 zh-hans = "全字匹配"
-zh-hant = "比對整個字"
+zh-hant = "比對完整字詞"
 
 # Toggle
 [SearchUseRegex]
@@ -1680,7 +1749,7 @@ tr = "RegEx kullan"
 uk = "RegEx"
 vi = "Sử dụng biểu thức chính quy"
 zh-hans = "正则"
-zh-hant = "使用正規表達式"
+zh-hant = "使用正規表示式"
 
 # Button
 [SearchReplaceAll]
@@ -2066,4 +2135,4 @@ tr = "Dosya zaten var. Üzerine yazmak istiyor musunuz?"
 uk = "Файл вже існує. Перезаписати?"
 vi = "Tệp đã tồn tại. Bạn có muốn ghi đè không?"
 zh-hans = "文件已存在。要覆盖它吗？"
-zh-hant = "檔案已存在。要覆蓋它嗎？"
+zh-hant = "檔案已存在。要覆寫嗎？"

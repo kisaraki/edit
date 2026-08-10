@@ -1,4 +1,5 @@
 // Copyright (c) Microsoft Corporation.
+// Modifications Copyright (c) 2026 KOSMOS, Tzushih.K.
 // Licensed under the MIT License.
 
 //! A shoddy framebuffer for terminal applications.
@@ -115,6 +116,7 @@ pub struct Framebuffer {
     contrast_colors: [Cell<(StraightRgba, StraightRgba)>; CACHE_TABLE_SIZE],
     background_fill: StraightRgba,
     foreground_fill: StraightRgba,
+    selection_colors: Option<(StraightRgba, StraightRgba)>,
 }
 
 impl Framebuffer {
@@ -133,6 +135,7 @@ impl Framebuffer {
                 CACHE_TABLE_SIZE],
             background_fill: DEFAULT_THEME[IndexedColor::Background as usize],
             foreground_fill: DEFAULT_THEME[IndexedColor::Foreground as usize],
+            selection_colors: None,
         }
     }
 
@@ -162,6 +165,30 @@ impl Framebuffer {
         if lightness[0] > lightness[1] {
             self.auto_colors.swap(0, 1);
         }
+    }
+
+    /// EN: Overrides selected-text colors; `None` restores the adaptive defaults.
+    /// 中文：覆寫反白文字色彩；`None` 恢復自動調整的預設色彩。
+    pub fn set_selection_colors(&mut self, colors: Option<(StraightRgba, StraightRgba)>) {
+        self.selection_colors = colors;
+    }
+
+    pub fn selection_colors(&self, focused: bool) -> (StraightRgba, StraightRgba) {
+        // EN: Explicit theme colors take priority over the original terminal-derived colors.
+        // 中文：主題指定的色彩優先於原本依終端配色推導的色彩。
+        if let Some(colors) = self.selection_colors {
+            return colors;
+        }
+
+        let mut bg = self.indexed(IndexedColor::Foreground).oklab_blend(self.indexed_alpha(
+            IndexedColor::BrightBlue,
+            1,
+            2,
+        ));
+        if !focused {
+            bg = bg.oklab_blend(self.indexed_alpha(IndexedColor::Background, 1, 2));
+        }
+        (bg, self.contrasted(bg))
     }
 
     /// Begins a new frame with the given `size`.

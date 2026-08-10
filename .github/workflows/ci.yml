@@ -20,6 +20,9 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
+          # EN: Compile and test custom features natively on macOS as well.
+          # 中文：客製功能亦須在 macOS 原生環境完成編譯與測試。
+          - macos-latest
     steps:
       # The Windows runners have autocrlf enabled by default.
       - name: Disable git autocrlf
@@ -46,3 +49,5 @@ jobs:
         run: cargo test --all-features --all-targets
       - name: Run clippy
         run: cargo clippy --workspace --all-features --all-targets -- --no-deps --deny warnings
+      - name: Build release binary
+        run: cargo build -p edit --release
