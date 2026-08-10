@@ -21,6 +21,8 @@ This editor pays homage to the classic [MS-DOS Editor](https://en.wikipedia.org/
   `%APPDATA%\TZK\Edit\settings.json`；macOS 與 Linux 則使用平台標準設定目錄下的
   `TZK/Edit/settings.json`。檔案固定使用 LF，避免 CRLF 造成設定解析問題。
 - 選單列使用白色背景，狀態列使用綠色背景。
+- 「搜尋」與「取代」改用中央對話框，不再占用編輯區上方列；保留搜尋選項、F3、Enter、
+  Ctrl+Alt+Enter、Esc，以及搜尋、取代、全部取代與關閉按鈕。
 - 「開啟舊檔」對話框分為上下兩欄；上欄維持目錄及檔案選擇，下欄顯示最近五次成功開啟
   的檔案名稱與絕對路徑。最近檔案亦保存於設定檔中，最新項目優先且不重複。
 - 開啟檔案及未命名文件第一次存檔時，由跨平台目錄抽象取得各作業系統的桌面路徑；
@@ -67,6 +69,9 @@ Customized features:
   settings in `%APPDATA%\TZK\Edit\settings.json`; macOS and Linux use `TZK/Edit/settings.json`
   beneath the platform-standard configuration directory. Files always use LF endings.
 - Uses a white menu-bar background and a green status-bar background.
+- Presents Find and Replace in centered dialogs instead of rows above the editor while retaining
+  search options, F3, Enter, Ctrl+Alt+Enter, Escape, and explicit Find, Replace, Replace All,
+  and Close buttons.
 - Splits the Open dialog into two panes. The upper pane keeps the normal directory/file picker;
   the bordered lower pane lists the five most recently opened files as one-click absolute-path
   buttons. The settings file keeps these paths newest-first and without duplicates.

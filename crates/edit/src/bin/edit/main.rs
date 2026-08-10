@@ -349,6 +349,12 @@ fn draw(ctx: &mut Context, state: &mut State) {
     draw_editor(ctx, state);
     draw_statusbar(ctx, state);
 
+    // EN: Search and Replace now render as centered modal dialogs above the complete editor.
+    // 中文：搜尋與取代現在以中央對話框呈現在完整編輯器上方。
+    if !matches!(state.wants_search.kind, StateSearchKind::Hidden | StateSearchKind::Disabled) {
+        draw_dialog_search(ctx, state);
+    }
+
     if state.wants_close {
         draw_handle_wants_close(ctx, state);
     }
